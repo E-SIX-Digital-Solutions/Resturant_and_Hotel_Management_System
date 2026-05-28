@@ -1,0 +1,69 @@
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE and Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.sublime-project
+.sublime-workspace
+
+# OS
+Thumbs.db
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage
+coverage/
+.coverage
+*.lcov
+
+# Database
+*.db
+*.sqlite
+*.mongodb
+
+# Build
+dist/
+build/
+out/
+
+# Misc
+.cache/
+temp/
+tmp/
+*.tmp
+
+# Testing
+test-results/
+.pytest_cache/
+
+# IDE Settings (local)
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json
