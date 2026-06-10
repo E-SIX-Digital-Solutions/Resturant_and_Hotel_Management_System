@@ -1,82 +1,107 @@
-import Order from '../models/Order.js';
-import Food from '../models/Food.js';
+import Order from "../models/Order.js";
+import Food from "../models/Food.js";
+
+const SERVICE_CHARGE_RATE = 0.15;
+
+const generateOrderNumber = async () => {
+  const count = await Order.countDocuments();
+  return `#${1001 + count}`;
+};
 
 export const createOrder = async (orderData) => {
   const { tableNumber, items: incomingItems, notes } = orderData;
 
   if (!Array.isArray(incomingItems) || incomingItems.length === 0) {
-    throw new Error('Order must contain at least one item');
+    throw new Error("Order must contain at least one item");
   }
 
   const items = [];
-  let totalPrice = 0;
+  let subtotal = 0;
 
   for (const it of incomingItems) {
-    const { food: foodId, quantity, note = '' } = it;
+    const foodId = it.food || it.foodId;
+    const { quantity, note = "" } = it;
 
     const food = await Food.findById(foodId);
     if (!food) {
       throw new Error(`Food not found: ${foodId}`);
     }
 
-    const subtotal = Number((food.price * quantity).toFixed(2));
-    totalPrice += subtotal;
+    if (!food.isAvailable) {
+      throw new Error(`${food.nameEn} is currently unavailable`);
+    }
+
+    const itemSubtotal = Number((food.price * quantity).toFixed(2));
+    subtotal += itemSubtotal;
 
     items.push({
       food: foodId,
       quantity,
       note,
-      subtotal,
+      subtotal: itemSubtotal,
     });
   }
 
-  totalPrice = Number(totalPrice.toFixed(2));
+  subtotal = Number(subtotal.toFixed(2));
+  const serviceCharge = Math.round(subtotal * SERVICE_CHARGE_RATE);
+  const totalPrice = subtotal + serviceCharge;
+  const orderNumber = await generateOrderNumber();
 
-  const order = new Order({ tableNumber, items, totalPrice, notes });
+  const order = new Order({
+    orderNumber,
+    tableNumber: String(tableNumber).trim(),
+    items,
+    subtotal,
+    serviceCharge,
+    totalPrice,
+    notes,
+  });
+
   await order.save();
-  return order.populate('items.food');
+  return order.populate("items.food");
 };
 
 export const getOrderById = async (id) => {
-  const order = await Order.findById(id).populate('items.food');
+  const order = await Order.findById(id).populate("items.food");
 
   if (!order) {
-    throw new Error('Order not found');
+    throw new Error("Order not found");
   }
 
   return order;
 };
 
 export const getAllOrders = async () => {
-  const orders = await Order.find()
-    .populate('items.food')
-    .sort({ createdAt: -1 });
-  return orders;
+  return Order.find().populate("items.food").sort({ createdAt: -1 });
 };
 
 export const getOrdersByStatus = async (status) => {
-  const orders = await Order.find({ status })
-    .populate('items.food')
+  const normalizedStatus =
+    status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+
+  return Order.find({ status: normalizedStatus })
+    .populate("items.food")
     .sort({ createdAt: -1 });
-  return orders;
 };
 
 export const getOrdersByTable = async (tableNumber) => {
-  const orders = await Order.find({ tableNumber })
-    .populate('items.food')
+  return Order.find({ tableNumber: String(tableNumber).trim() })
+    .populate("items.food")
     .sort({ createdAt: -1 });
-  return orders;
 };
 
 export const updateOrderStatus = async (id, status) => {
+  const normalizedStatus =
+    status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
+
   const order = await Order.findByIdAndUpdate(
     id,
-    { status },
-    { new: true, runValidators: true }
-  ).populate('items.food');
+    { status: normalizedStatus },
+    { new: true, runValidators: true },
+  ).populate("items.food");
 
   if (!order) {
-    throw new Error('Order not found');
+    throw new Error("Order not found");
   }
 
   return order;
@@ -86,7 +111,7 @@ export const deleteOrder = async (id) => {
   const order = await Order.findByIdAndDelete(id);
 
   if (!order) {
-    throw new Error('Order not found');
+    throw new Error("Order not found");
   }
 
   return order;
@@ -103,19 +128,21 @@ export const getOrderStatistics = async () => {
     createdAt: { $gte: today, $lt: tomorrow },
   });
 
-  const pendingOrders = await Order.countDocuments({ status: 'Pending' });
-  const completedOrders = await Order.countDocuments({ status: 'Ready' });
+  const pendingOrders = await Order.countDocuments({ status: "Pending" });
+  const preparingOrders = await Order.countDocuments({ status: "Preparing" });
+  const completedOrders = await Order.countDocuments({ status: "Ready" });
 
   const totalRevenueResult = await Order.aggregate([
     {
       $match: {
+        status: "Ready",
         createdAt: { $gte: today, $lt: tomorrow },
       },
     },
     {
       $group: {
         _id: null,
-        total: { $sum: '$totalPrice' },
+        total: { $sum: "$totalPrice" },
       },
     },
   ]);
@@ -126,6 +153,7 @@ export const getOrderStatistics = async () => {
   return {
     totalOrdersToday,
     pendingOrders,
+    preparingOrders,
     completedOrders,
     totalRevenue,
   };
