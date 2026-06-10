@@ -178,7 +178,9 @@ export default function TrackingPage() {
                       src={item.image}
                       alt={name}
                       className="h-10 w-10 rounded-lg object-cover bg-slate-100 dark:bg-slate-800"
-                      fill
+                      width={100}
+                      height={100}
+                      unoptimized={item.image.startsWith("http://localhost")}
                     />
                     <div className="flex-1 min-w-0">
                       <h4 className="text-xs font-bold text-slate-950 dark:text-slate-100 truncate">

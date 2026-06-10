@@ -204,7 +204,9 @@ export default function CartPage() {
                     src={item.image}
                     alt={name}
                     className="h-16 w-16 rounded-2xl object-cover bg-slate-100 dark:bg-slate-800"
-                    fill
+                    width={100}
+                    height={100}
+                    unoptimized={item.image.startsWith("http://localhost")}
                   />
                   <div className="flex-1 min-w-0">
                     <h3 className="font-serif text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
