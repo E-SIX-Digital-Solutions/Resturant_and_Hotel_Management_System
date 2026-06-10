@@ -33,7 +33,7 @@ const readStoredCart = (): CartItem[] => {
 };
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [cart, setCart] = useState<CartItem[]>(readStoredCart);
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [currentActiveOrderId, setCurrentActiveOrderId] = useState<
     string | null
   >(null);
@@ -44,6 +44,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    function updateCart() {
+      setCart(readStoredCart());
+    }
+    updateCart();
+
     const savedActiveOrder = localStorage.getItem("hotel-order-active-id");
     const savedTable = localStorage.getItem("hotel-order-table");
     const savedRole = localStorage.getItem("hotel-order-role") as UserRole;

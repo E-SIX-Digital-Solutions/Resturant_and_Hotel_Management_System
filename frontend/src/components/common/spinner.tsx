@@ -17,22 +17,21 @@ const Spinner = ({
   };
 
   return (
-    <tr>
-      <td colSpan={6} className="py-12">
-        <div className="flex items-center justify-center w-full">
-          <div
-            className={`
-                ${sizeClasses[size]} 
-                border-4 border-gray-300 
-                ${color} 
-                rounded-full 
-                animate-spin
-                ${className}
-            `}
-          />
-        </div>
-      </td>
-    </tr>
+    <div
+      role="status"
+      aria-label="Loading"
+      className={`flex items-center justify-center ${className}`}
+    >
+      <div
+        className={`
+          ${sizeClasses[size]}
+          border-4 border-gray-300
+          ${color}
+          rounded-full
+          animate-spin
+        `}
+      />
+    </div>
   );
 };
 
