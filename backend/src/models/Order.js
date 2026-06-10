@@ -1,9 +1,9 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const orderItemSchema = new mongoose.Schema({
   food: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Food',
+    ref: "Food",
     required: true,
   },
   quantity: {
@@ -13,7 +13,7 @@ const orderItemSchema = new mongoose.Schema({
   },
   note: {
     type: String,
-    default: '',
+    default: "",
   },
   subtotal: {
     type: Number,
@@ -23,11 +23,26 @@ const orderItemSchema = new mongoose.Schema({
 
 const orderSchema = new mongoose.Schema(
   {
+    orderNumber: {
+      type: String,
+      unique: true,
+    },
     tableNumber: {
-      type: Number,
-      required: [true, 'Please provide a table number'],
+      type: String,
+      required: [true, "Please provide a table number"],
+      trim: true,
     },
     items: [orderItemSchema],
+    subtotal: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    serviceCharge: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     totalPrice: {
       type: Number,
       required: true,
@@ -35,15 +50,15 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['Pending', 'Preparing', 'Ready'],
-      default: 'Pending',
+      enum: ["Pending", "Preparing", "Ready"],
+      default: "Pending",
     },
     notes: {
       type: String,
-      default: '',
+      default: "",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export default mongoose.model('Order', orderSchema);
+export default mongoose.model("Order", orderSchema);
